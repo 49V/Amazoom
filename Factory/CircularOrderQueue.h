@@ -17,6 +17,7 @@ class CircularOrderQueue : public virtual OrderQueue {
   cpen333::thread::semaphore consumer_;
   std::mutex pmutex_;
   std::mutex cmutex_;
+  std::mutex rmutex_;
   size_t pidx_;
   size_t cidx_;
   size_t orderCount_;
@@ -29,7 +30,7 @@ class CircularOrderQueue : public virtual OrderQueue {
   CircularOrderQueue() :
       buff_(),
       producer_(CIRCULAR_BUFF_SIZE), consumer_(0),
-      pmutex_(), cmutex_(), pidx_(0), cidx_(0), orderCount_(0){}
+      pmutex_(), cmutex_(),rmutex_(), pidx_(0), cidx_(0), orderCount_(0){}
 
   void add(const Order& order) {
 	
@@ -72,7 +73,12 @@ class CircularOrderQueue : public virtual OrderQueue {
   }
   
   bool isEmpty(){
-	  return (orderCount_ == 0);
+	  
+	  std::unique_lock<decltype(pmutex_)> lock(pmutex_);
+	  bool empty = (orderCount_ == 0);
+	  lock.unlock();
+	  
+	  return empty;
   }
 
 };

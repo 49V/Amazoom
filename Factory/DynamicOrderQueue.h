@@ -15,13 +15,14 @@ class DynamicOrderQueue : public virtual OrderQueue {
   std::deque<Order> buff_;
   std::mutex mutex_;
   std::condition_variable cv_;
+  size_t orderCount_;
 
  public:
   /**
    * Creates the dynamic queue
    */
   DynamicOrderQueue() :
-      buff_(), mutex_(), cv_(){}
+      buff_(), mutex_(), cv_(), orderCount_(0){}
 
   void add(const Order& order) {
 
@@ -33,6 +34,7 @@ class DynamicOrderQueue : public virtual OrderQueue {
 	
 	//Create a lock to protect our resource
 	std::unique_lock<decltype(mutex_)> lock(mutex_);
+	    orderCount_++;
 		buff_.push_back(order);
 	lock.unlock();
 	
@@ -53,12 +55,18 @@ class DynamicOrderQueue : public virtual OrderQueue {
 	// Nobody gets caught waiting on the CV
 	std::unique_lock<decltype(mutex_)> lock(mutex_);
 		cv_.wait(lock, [&](){return !buff_.empty();});
+		orderCount_--;
 		Order out = buff_.front();
 		buff_.pop_front();
 	lock.unlock();
 
     return out;
   }
+  
+    bool isEmpty(){
+	  return (orderCount_ == 0);
+    }
+  
 };
 
 #endif //LAB6_DYNAMICORDERQUEUE_H

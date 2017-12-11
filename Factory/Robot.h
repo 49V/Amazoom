@@ -43,10 +43,16 @@ class Robot : public cpen333::thread::thread_object {
 
     safe_printf("Robot %d started\n", id_);
 
-    //==================================================
-    // TODO: Detect when it's time to exit loop
-    //==================================================
+    
     Order order = orders_.get();
+	
+	
+	//==================================================
+    // TODO: ALLOW ROBOT TO PICK UP MULTIPLE OBJECTS
+    //==================================================
+	// Talk about what you did with the delivery trucks, and how it would be 
+	// nearly identically the same thing with robots.
+	
     while (true) {
 		
 	  // Check if we have the poison order

@@ -1,5 +1,5 @@
-#ifndef LAB6_CUSTOMER_H
-#define LAB6_CUSTOMER_H
+#ifndef CUSTOMER_H
+#define CUSTOMER_H
 
 #include <cpen333/thread/thread_object.h>
 #include <cpen333/thread/semaphore.h>

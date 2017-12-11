@@ -1,5 +1,5 @@
-#ifndef DELIVERY_DRIVER_H
-#define DELIVERY_DRIVER_H
+#ifndef INVENTORY_DRIVER_H
+#define INVENTORY_DRIVER_H
 
 #include <cpen333/thread/thread_object.h>
 #include <cpen333/process/semaphore.h>
@@ -13,12 +13,12 @@
 #include "common.h"
 
 /**
- * Delivery drivers take completed orders from the robots and deliver
+ * Inventory drivers take completed orders from the robots and deliver
  * them to customers.
  */
-class DeliveryDriver : public cpen333::thread::thread_object {
+class InventoryDriver : public cpen333::thread::thread_object {
   OrderQueue& queue_;
-  const std::vector<Customer*>& customers_;
+  OrderQueue& factoryQueue_;
   int id_;
   
   //Part 3
@@ -31,9 +31,9 @@ class DeliveryDriver : public cpen333::thread::thread_object {
    * @param queue queue of completed orders to server.  It is assumed this vector of customers never changes.
    * @param customers list of customers for finding who to deliver order to
    */
-  DeliveryDriver(int id, OrderQueue& queue,
-         const std::vector<Customer*>& customers) :
-      id_(id), queue_(queue), customers_(customers) {}
+  InventoryDriver(int id, OrderQueue& queue,
+         OrderQueue& factoryQueue) :
+      id_(id), queue_(queue), factoryQueue_(factoryQueue){}
 
   /**
    * Unique driver id
@@ -57,7 +57,7 @@ class DeliveryDriver : public cpen333::thread::thread_object {
 	// Grab the shared mutex for delivery drivers
     cpen333::process::semaphore parkingSpots(PARKING_SEMAPHORE, PARKING_SPOTS_COUNT);
 	
-    safe_printf("Delivery Driver %d started\n", id_);
+    safe_printf("Inventory Driver %d started\n", id_);
 
 	// If we have no orders, just go deliver yer goods mate
 	parkingSpots.wait();
@@ -67,18 +67,12 @@ class DeliveryDriver : public cpen333::thread::thread_object {
 	parkingSpots.notify();
 	
     while (true) {
-
+	
 		for(int i = 0; i < orders.size(); ++i) {
 		    // serve order
-			safe_printf("Delivery driver %d delivering {%d,%d}\n", id_, orders[i].customer_id, orders[i].item_id);
-
-		    // Go find customer and serve
-			for (auto& customer : customers_) {
-				if (customer->id() == orders[i].customer_id) {
-					customer->serve(orders[i]);
-					break;
-				}
-			}
+			safe_printf("Inventory driver %d delivering {%d,%d}\n", id_, orders[i].customer_id, orders[i].item_id);
+			// Adds to factory queue so the robots can start stocking the shelves
+			factoryQueue_.add(orders[i]);
 		}
 	  
 		  // Clears orders queue for next batch
@@ -89,10 +83,10 @@ class DeliveryDriver : public cpen333::thread::thread_object {
 		  for(int i = 0; ((i < truckSpace) && !queue_.isEmpty()); ++i) {			
 			orders.push_back(queue_.get());
 			
-						// If we have no orders, just go ahead and move on
+			// If we have no orders, just go ahead and move on
 			// Check if we have a poison order
 			if(orders[i] == poisonOrder){
-				safe_printf("Delivery driver %d checking out.\n", id_);
+				safe_printf("Inventory driver %d checking out.\n", id_);
 				return 0;
 			}
 		  }
