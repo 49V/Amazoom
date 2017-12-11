@@ -105,6 +105,8 @@ int main() {
     deliveryDriver = nullptr;
   }
 
+  std::cout << "Order queue is: " << order_queue.isEmpty() << std::endl;
+  
   std::cout << "Amazoom is closing" << std::endl;
   cpen333::pause();
 

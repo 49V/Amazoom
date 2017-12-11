@@ -7,7 +7,8 @@
  * Thread-safe queue of items
  */
 class OrderQueue {
- public:
+ public: 
+  
   /**
    * Adds an order item to the queue
    * @param order item to add
@@ -19,7 +20,13 @@ class OrderQueue {
    * @return next available item
    */
   virtual Order get() = 0;
-
+  
+  /**
+   * Checks whether or not a queue is empty
+   * @return 1 if empty, 0 if not
+   */
+  virtual bool isEmpty() = 0;
+  
 };
 
 #endif //LAB6_QUEUE_H

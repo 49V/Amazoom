@@ -2,6 +2,7 @@
 #define LAB6_SERVER_H
 
 #include <cpen333/thread/thread_object.h>
+#include <cpen333/process/semaphore.h>
 #include <iostream>
 #include <thread>
 
@@ -9,6 +10,7 @@
 #include "Order.h"
 #include "OrderQueue.h"
 #include "safe_printf.h"
+#include "common.h"
 
 /**
  * Delivery drivers take completed orders from the robots and deliver
@@ -47,38 +49,56 @@ class DeliveryDriver : public cpen333::thread::thread_object {
    */
   int main() {
 	  
-	  
-	// Need to add functionality such that delivery driver waits until the truck
-	// is full or until the order queue is empty.
+	// Define the vector for storing orders
+	std::vector<Order> orders;
+	
+	const int truckSpace = 5;
 
+	// Grab the shared mutex for delivery drivers
+    cpen333::process::semaphore parkingSpots(PARKING_SEMAPHORE, PARKING_SPOTS_COUNT);
+	
     safe_printf("Delivery Driver %d started\n", id_);
 
-    Order order = queue_.get();
+	// If we have no orders, just go deliver yer goods mate
+	parkingSpots.wait();
+	for(int i = 0; ((i < truckSpace) && !queue_.isEmpty()); ++i) {
+		orders.push_back(queue_.get());
+	}
+	parkingSpots.notify();
+	
     while (true) {
 
-	  // Check if we have a poison order
-	  if(order == poisonOrder){
-		  break;
-	  }
-	
-      // serve order
-      safe_printf("Delivery driver %d delivering {%d,%d}\n", id_, order.customer_id, order.item_id);
+		for(int i = 0; i < orders.size(); ++i) {
+		    // serve order
+			safe_printf("Delivery driver %d delivering {%d,%d}\n", id_, orders[i].customer_id, orders[i].item_id);
 
-      // Go find customer and serve
-      for (auto& customer : customers_) {
-        if (customer->id() == order.customer_id) {
-          customer->serve(order);
-          break;
-        }
-      }
+		    // Go find customer and serve
+			for (auto& customer : customers_) {
+				if (customer->id() == orders[i].customer_id) {
+					customer->serve(orders[i]);
+					break;
+				}
+			}
+		}
+	  
+		  // Clears orders queue for next batch
+		  orders.clear();
+		  
+		  // Get next orders
+		  parkingSpots.wait();
+		  for(int i = 0; ((i < truckSpace) && !queue_.isEmpty()); ++i) {			
+			orders.push_back(queue_.get());
+			
+						// If we have no orders, just go ahead and move on
+			// Check if we have a poison order
+			if(orders[i] == poisonOrder){
+				safe_printf("Delivery driver %d checking out.\n", id_);
+				return 0;
+			}
+		  }
+		  parkingSpots.notify();
+	}
 
-      // next order
-      order = queue_.get();
-    }
-
-    safe_printf("Delivery driver %d checking out.\n", id_);
-
-    return 0;
   }
 };
 

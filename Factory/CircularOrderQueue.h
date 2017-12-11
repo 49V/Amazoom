@@ -19,7 +19,7 @@ class CircularOrderQueue : public virtual OrderQueue {
   std::mutex cmutex_;
   size_t pidx_;
   size_t cidx_;
-
+  size_t orderCount_;
 
  public:
   /**
@@ -29,17 +29,9 @@ class CircularOrderQueue : public virtual OrderQueue {
   CircularOrderQueue() :
       buff_(),
       producer_(CIRCULAR_BUFF_SIZE), consumer_(0),
-      pmutex_(), cmutex_(), pidx_(0), cidx_(0){}
+      pmutex_(), cmutex_(), pidx_(0), cidx_(0), orderCount_(0){}
 
   void add(const Order& order) {
-
-    //==================================================
-    // TODO: Safely add item to "queue"
-    //    - wait for empty slot
-    //    - safely acquire and increment producer index
-    //    - fill slot
-    //    - notify others of item availability
-    //==================================================
 	
 	// Wait for the empty slot
 	producer_.wait();
@@ -47,6 +39,7 @@ class CircularOrderQueue : public virtual OrderQueue {
 	// When we acquire it, take the producer index and store it
     int currentProducerIndex;
 	std::unique_lock<decltype(pmutex_)> lock(pmutex_);
+	orderCount_++;
     currentProducerIndex = pidx_;
 	// update producer index
 	pidx_ = (pidx_ + 1) % CIRCULAR_BUFF_SIZE;
@@ -61,18 +54,11 @@ class CircularOrderQueue : public virtual OrderQueue {
 
   Order get() {
 
-    //==================================================
-    // TODO: Safely remove item from "queue"
-    //    - wait for next filled slot
-    //    - safely acquire and increment consumer index
-    //    - remove item from slot
-    //    - notify others of slot availability
-    //==================================================
-
 	consumer_.wait();
 	
     int currentConsumerIndex;
 	std::unique_lock<decltype(cmutex_)> lock(cmutex_);
+	orderCount_--;
     currentConsumerIndex = cidx_;
 	// update consumer index
 	cidx_ = (cidx_ + 1) % CIRCULAR_BUFF_SIZE;
@@ -83,6 +69,10 @@ class CircularOrderQueue : public virtual OrderQueue {
 	producer_.notify();
 
     return out;
+  }
+  
+  bool isEmpty(){
+	  return (orderCount_ == 0);
   }
 
 };
