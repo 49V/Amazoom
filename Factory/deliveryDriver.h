@@ -92,6 +92,8 @@ class DeliveryDriver : public cpen333::thread::thread_object {
 						// If we have no orders, just go ahead and move on
 			// Check if we have a poison order
 			if(orders[i] == poisonOrder){
+				//YOU NEED TO FREE THE PARKING SPOT IF YOU ARE LEAVING!
+				parkingSpots.notify();
 				safe_printf("Delivery driver %d checking out.\n", id_);
 				return 0;
 			}

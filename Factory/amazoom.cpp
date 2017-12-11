@@ -122,15 +122,20 @@ int main() {
     robot->join();
   }
 
+  std::cout<< "The delivery queue is empty?: " << delivery_queue.isEmpty() << std::endl;
+  std::cout<< "The inventory queue is empty?: " << inventory_queue.isEmpty() << std::endl;
+  
     // Add numberOfDeliveryDrivers poison pills to the delivery_queue
-  for(int i = 0; i < numberOfDeliveryDrivers * 2; ++i){
+  for(int i = 0; i < numberOfDeliveryDrivers; ++i){
 	  delivery_queue.add({POISON_ID, POISON_ID});
   }
   // Add numberOfInventoryDrivers poison pills to the inventory_queue
-  for(int i = 0; i < numberOfInventoryDrivers * 2; ++i){
+  for(int i = 0; i < numberOfInventoryDrivers; ++i){
 	  inventory_queue.add({POISON_ID, POISON_ID});
   }
-   
+  
+  std::cout<< "The delivery queue is empty?: " << delivery_queue.isEmpty() << std::endl;
+  std::cout<< "The inventory queue is empty?: " << inventory_queue.isEmpty() << std::endl;  
   // wait for all deliveryDrivers to leave
   for (auto& deliveryDriver : deliveryDrivers) {
     deliveryDriver->join();
