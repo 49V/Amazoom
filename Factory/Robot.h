@@ -1,5 +1,5 @@
-#ifndef LAB6_CHEF_H
-#define LAB6_CHEF_H
+#ifndef ROBOT_H
+#define ROBOT_H
 
 #include <cpen333/thread/thread_object.h>
 #include <iostream>
@@ -10,15 +10,14 @@
 #include "safe_printf.h"
 
 /**
- * The robot grabs an order from the queue and loads them onto the delivery truck
+ * The robot gets Orders from the "orders_" queue and places the completed work
+ * on "serve_" queue.
  */
 class Robot : public cpen333::thread::thread_object {
   OrderQueue& orders_;
   OrderQueue& serve_;
   int id_;
-  //Part 3
   Order poisonOrder = {666, 666};
-  
   
  public:
   /**
@@ -50,8 +49,6 @@ class Robot : public cpen333::thread::thread_object {
 	//==================================================
     // TODO: ALLOW ROBOT TO PICK UP MULTIPLE OBJECTS
     //==================================================
-	// Talk about what you did with the delivery trucks, and how it would be 
-	// nearly identically the same thing with robots.
 	
     while (true) {
 		
@@ -77,4 +74,4 @@ class Robot : public cpen333::thread::thread_object {
   }
 };
 
-#endif //LAB6_CHEF_H
+#endif //ROBOT_H

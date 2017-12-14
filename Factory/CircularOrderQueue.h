@@ -1,5 +1,5 @@
-#ifndef LAB6_CIRCULARORDERQUEUE_H
-#define LAB6_CIRCULARORDERQUEUE_H
+#ifndef CIRCULARORDERQUEUE_H
+#define CIRCULARORDERQUEUE_H
 
 #include "OrderQueue.h"
 #include <cpen333/thread/semaphore.h>
@@ -12,15 +12,15 @@
  * (i.e. a fixed-size queue)
  */
 class CircularOrderQueue : public virtual OrderQueue {
-  Order buff_[CIRCULAR_BUFF_SIZE];
+  Order buffer_[CIRCULAR_BUFF_SIZE];
   cpen333::thread::semaphore producer_;
   cpen333::thread::semaphore consumer_;
-  std::mutex pmutex_;
-  std::mutex cmutex_;
-  std::mutex rmutex_;
-  size_t pidx_;
-  size_t cidx_;
-  size_t orderCount_;
+  std::mutex producerMutex_;
+  std::mutex consumerMutex_;
+  std::mutex readerMutex_;
+  size_t producerIndex_;
+  size_t consumerIndex_;
+  size_t queueCount_;
 
  public:
   /**
@@ -28,24 +28,28 @@ class CircularOrderQueue : public virtual OrderQueue {
    * @param buffsize size of circular buffer
    */
   CircularOrderQueue() :
-      buff_(),
+      buffer_(),
       producer_(CIRCULAR_BUFF_SIZE), consumer_(0),
-      pmutex_(), cmutex_(),rmutex_(), pidx_(0), cidx_(0), orderCount_(0){}
+      producerMutex_(), consumerMutex_(),readerMutex_(), producerIndex_(0), consumerIndex_(0), queueCount_(0){}
 
+  /**
+   * Adds an order to the queue if space is available, otherwise it will wait. Notifies writer mutex of additional order
+   * @ param order Order to be added to the queue
+  */
   void add(const Order& order) {
 	
-	// Wait for the empty slot
+	// wait for the empty slot
 	producer_.wait();
 	
-	// When we acquire it, take the producer index and store it
+	// when we acquire it, take the producer index and store it
     int currentProducerIndex;
-	std::unique_lock<decltype(pmutex_)> lock(pmutex_);
-	orderCount_++;
-    currentProducerIndex = pidx_;
+	std::unique_lock<decltype(producerMutex_)> lock(producerMutex_);
+	queueCount_++;
+    currentProducerIndex = producerIndex_;
 	// update producer index
-	pidx_ = (pidx_ + 1) % CIRCULAR_BUFF_SIZE;
+	producerIndex_ = (producerIndex_ + 1) % CIRCULAR_BUFF_SIZE;
 	//Update the buffer to take the current order
-    buff_[currentProducerIndex] = order;
+    buffer_[currentProducerIndex] = order;
 	lock.unlock();
 	
 	// Update the consumer
@@ -53,18 +57,23 @@ class CircularOrderQueue : public virtual OrderQueue {
 
   }
 
+  /**
+   * Takes an order from the queue if an order is available, if not will wait. 
+   * Notifies the producer queue that another spot has opened for writing.
+   * @return Order object from the queue
+  */
   Order get() {
 
 	consumer_.wait();
 	
     int currentConsumerIndex;
-	std::unique_lock<decltype(cmutex_)> lock(cmutex_);
-	orderCount_--;
-    currentConsumerIndex = cidx_;
+	std::unique_lock<decltype(consumerMutex_)> lock(consumerMutex_);
+	queueCount_--;
+    currentConsumerIndex = consumerIndex_;
 	// update consumer index
-	cidx_ = (cidx_ + 1) % CIRCULAR_BUFF_SIZE;
+	consumerIndex_ = (consumerIndex_ + 1) % CIRCULAR_BUFF_SIZE;
 	// Return the order at the current index
-    Order out = buff_[currentConsumerIndex];
+    Order out = buffer_[currentConsumerIndex];
 	lock.unlock();
 	
 	producer_.notify();
@@ -72,10 +81,14 @@ class CircularOrderQueue : public virtual OrderQueue {
     return out;
   }
   
+  /**
+   * Checks whether or not a queue is empty
+   * @return bool Returns 1 if empty, 0 otherwise
+  */
   bool isEmpty(){
 	  
-	  std::unique_lock<decltype(pmutex_)> lock(pmutex_);
-	  bool empty = (orderCount_ == 0);
+	  std::unique_lock<decltype(producerMutex_)> lock(producerMutex_);
+	  bool empty = (queueCount_ == 0);
 	  lock.unlock();
 	  
 	  return empty;

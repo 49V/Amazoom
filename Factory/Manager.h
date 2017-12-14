@@ -14,20 +14,22 @@
 class Manager:public cpen333::thread::thread_object {
   OrderQueue& queue_;
   OrderQueue& stock_queue_;
-  Menu& menu_;
+  Menu& catalogue_;
   int id_;
-  
-  std::mutex customerMutex;
+  int stockedCount = 0;
+  std::mutex managerMutex;
+  std::condition_variable orderStocked;
 
  public:
   /**
    * Creates a manager
-   * @param id manager id
-   * @param menu menu for manager to order inventory from
-   * @param queue queue to place inventory order into
+   * @param id : manager id
+   * @param catalogue : catalogue for manager to order inventory from
+   * @param queue : queue to place inventory order into
+   * @param stock_queue : queue to check whether or not an item has been stocke
    */
-  Manager(int id, Menu& menu, OrderQueue& queue, OrderQueue& stock_queue) :
-      id_(id), menu_(menu), queue_(queue), stock_queue_(stock_queue) {}
+  Manager(int id, Menu& catalogue, OrderQueue& queue, OrderQueue& stock_queue) :
+      id_(id), catalogue_(catalogue), queue_(queue), stock_queue_(stock_queue) {}
 
   /**
    * Unique manager id
@@ -36,6 +38,19 @@ class Manager:public cpen333::thread::thread_object {
   int id() {
     return id_;
   }  
+
+  /**
+   * Stocks order and notifies manager
+   * @param order : Order that is ready to be stocked
+  */
+  void stock(const Order& order){
+    std::unique_lock<decltype(managerMutex)> lock(managerMutex);
+        stockedCount++;
+    lock.unlock();
+
+    orderStocked.notify_one();
+
+  }
 
   /**
    * Main manager function
@@ -53,11 +68,11 @@ class Manager:public cpen333::thread::thread_object {
     srand((int)std::chrono::system_clock::now().time_since_epoch().count());
 
     // appetizer
-    size_t s = menu_.appetizers().size();
+    size_t s = catalogue_.catalogue().size();
 	
 	for(int i = 0; i < numberOfInventoryOrders; ++i) {
 		if (s > 0) {
-		  MenuItem appy = menu_.appetizers()[rand() % s];
+		  MenuItem appy = catalogue_.catalogue()[rand() % s];
 		  cost += appy.price;
 		  ++items;
 
@@ -66,22 +81,13 @@ class Manager:public cpen333::thread::thread_object {
 		}
 	}
 
-    //==================================================
-    // TODO: Wait for all order inventory items to be stocked
-    //==================================================
-	//The manager could alternatively constantly monitor the inventory levels in
-	// a loop, and place orders whenever inventory is low. This is similar to how
-	// robots and drivers will wait in the loop until they are doled out poison.
-	// The inventory would be shared memory that robots and such would access
-	// as they fulfill delivery orders.
-    // As soon as the last customer leaves, we could notify the manager that it 
-    // is quitting time, and just make the manager wait until all items have
-    // been stocked before shutting the factory down	
-	// Keep a condition variable that monitors whether or not item has been 
-	// stocked. Just use the queue function I created. This would be the alternatively
-	
-	safe_printf("Manager %d waiting on stock \n", id_);
-	// CONDITIONS
+    // Wait until all items have been stocked.
+    safe_printf("Manager %d waiting on stock \n", id_);
+    /*
+    std::unique_lock <decltype(managerMutex)> lock(managerMutex);
+    orderStocked.wait(lock, [&] () {return stockedCount >= numberOfInventoryOrders});
+    lock.unlock();
+    */
 	safe_printf("Manager %d received all stock\n", id_);
 	
     // stay for some time

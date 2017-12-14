@@ -20,8 +20,6 @@ class DeliveryDriver : public cpen333::thread::thread_object {
   OrderQueue& queue_;
   const std::vector<Customer*>& customers_;
   int id_;
-  
-  //Part 3
   Order poisonOrder = {666, 666};
 
  public:
@@ -69,13 +67,13 @@ class DeliveryDriver : public cpen333::thread::thread_object {
     while (true) {
 
 		for(int i = 0; i < orders.size(); ++i) {
-		    // serve order
+		    // deliver order
 			safe_printf("Delivery driver %d delivering {%d,%d}\n", id_, orders[i].customer_id, orders[i].item_id);
 
-		    // Go find customer and serve
+		    // Go find customer and deliver
 			for (auto& customer : customers_) {
 				if (customer->id() == orders[i].customer_id) {
-					customer->serve(orders[i]);
+					customer->deliver(orders[i]);
 					break;
 				}
 			}

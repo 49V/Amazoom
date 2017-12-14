@@ -1,5 +1,5 @@
-#ifndef LAB6_ORDER_H
-#define LAB6_ORDER_H
+#ifndef ORDER_H
+#define ORDER_H
 
 /**
  * Basic order information containing a customer id and item id
@@ -19,4 +19,4 @@ struct Order {
   
 };
 
-#endif //LAB6_ORDER_H
+#endif //ORDER_H

@@ -1,5 +1,5 @@
-#ifndef LAB6_QUEUE_H
-#define LAB6_QUEUE_H
+#ifndef ORDER_QUEUE_H
+#define ORDER_QUEUE_H
 
 #include "Order.h"
 
@@ -29,4 +29,4 @@ class OrderQueue {
   
 };
 
-#endif //LAB6_QUEUE_H
+#endif //ORDER_QUEUE_H

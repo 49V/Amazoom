@@ -20,8 +20,6 @@ class InventoryDriver : public cpen333::thread::thread_object {
   OrderQueue& queue_;
   OrderQueue& factoryQueue_;
   int id_;
-  
-  //Part 3
   Order poisonOrder = {666, 666};
 
  public:

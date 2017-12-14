@@ -1,5 +1,5 @@
-#ifndef LAB6_MENU_H
-#define LAB6_MENU_H
+#ifndef MENU_H
+#define MENU_H
 
 #include <string>
 #include <vector>
@@ -26,12 +26,10 @@ struct MenuItem {
  */
 class Menu {
   std::map<int,MenuItem> menu_;
-  std::vector<MenuItem> appetizers_;
-  std::vector<MenuItem> mains_;
-  std::vector<MenuItem> desserts_;
+  std::vector<MenuItem> catalogue_;
 
  public:
-  Menu(): menu_(), appetizers_(), mains_(), desserts_() {}
+  Menu(): menu_(), catalogue_(){}
 
   /**
    * Loads items from a JSON file
@@ -41,7 +39,7 @@ class Menu {
   size_t load(const std::string& filename) {
     std::ifstream fin(filename);
 
-    size_t nadded = 0;
+    size_t numberAdded = 0;
     if (fin.is_open()) {
       JSON jmenu;
       fin >> jmenu;
@@ -58,45 +56,22 @@ class Menu {
         // add new item
         auto it = menu_.insert({item.id, item});
         if (it.second) {
-          ++nadded;
-
-          if (item.course == "appetizer") {
-            appetizers_.push_back(item);
-          } else if (item.course == "main") {
-            mains_.push_back(item);
-          } else if (item.course == "dessert") {
-            desserts_.push_back(item);
-          }
+          ++numberAdded;
+          catalogue_.push_back(item);
         }
       }
     }
-    return nadded;
+    return numberAdded;
   }
 
   /**
-   * Appetizers
-   * @return list of appetizers
+   * Catalogue
+   * @return list of the catalogue
    */
-  const std::vector<MenuItem>& appetizers() const {
-    return appetizers_;
-  }
-
-  /**
-   * Main Courses
-   * @return list of mains
-   */
-  const std::vector<MenuItem>& mains() const {
-    return mains_;
-  }
-
-  /**
-   * Desserts
-   * @return list of desserts
-   */
-  const std::vector<MenuItem>& desserts() const {
-    return desserts_;
+  const std::vector<MenuItem>& catalogue() const {
+    return catalogue_;
   }
 
 };
 
-#endif //LAB6_MENU_H
+#endif //MENU_H

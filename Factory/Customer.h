@@ -10,54 +10,48 @@
 
 /**
  * Customers place orders into a queue, wait for them to be
- * served, eat, then leave
+ * served, and then log off
  */
 class Customer : public cpen333::thread::thread_object {
   OrderQueue& queue_;
-  Menu& menu_;
+  Menu& catalogue_;
   int id_;
-  
-  // Part 2
-  int servedDishCount = 0;
+  int deliveredOrderCount = 0;
   std::mutex customerMutex;
-  std::condition_variable mealServed;
+  std::condition_variable orderDelivered;
 
  public:
   /**
    * Creates a customer
-   * @param id customer id
-   * @param menu menu for customer to order food from
-   * @param queue queue to place order into
+   * @param id : Customer id
+   * @param catalogue : Catalogue for customer to order product from
+   * @param queue : Queue to place order into
    */
-  Customer(int id, Menu& menu, OrderQueue& queue) :
-      id_(id), menu_(menu), queue_(queue) {}
+  Customer(int id, Menu& catalogue, OrderQueue& queue) :
+      id_(id), catalogue_(catalogue), queue_(queue) {}
 
   /**
    * Unique customer id
-   * @return customer id
+   * @return : Customer id
    */
   int id() {
     return id_;
   }
 
   /**
-   * Serve customer an order
-   * @param order order that is complete
+   * Delivers customer order and notifies the customer 
+   * @param order : Order that is ready to be delivered
    */
-  void serve(const Order& order) {
+  void deliver(const Order& order) {
 
-    //==================================================
-    // TODO: Notify main method that order is ready
-    //==================================================
 	std::unique_lock<decltype(customerMutex)> lock(customerMutex);
-		servedDishCount++;
+		deliveredOrderCount++;
 	lock.unlock();
 	
-	mealServed.notify_one();
+	orderDelivered.notify_one();
   
   }
   
-
   /**
    * Main customer function
    * @return 0 when complete
@@ -72,35 +66,34 @@ class Customer : public cpen333::thread::thread_object {
 
     srand((int)std::chrono::system_clock::now().time_since_epoch().count());
 
-    // appetizer
-    size_t s = menu_.appetizers().size();
+    // Randomly selects and orders an item from the catalogue
+    size_t s = catalogue_.catalogue().size();
     if (s > 0) {
-      MenuItem appy = menu_.appetizers()[rand() % s];
-      cost += appy.price;
+      MenuItem product = catalogue_.catalogue()[rand() % s];
+      cost += product.price;
       ++items;
 
-      safe_printf("Customer %d ordering the %s (%d)\n", id_, appy.item.c_str(), appy.id);
-      queue_.add({id_, appy.id});
+      safe_printf("Customer %d ordering the %s (%d)\n", id_, product.item.c_str(), product.id);
+      queue_.add({id_, product.id});
     }
 
-    //==================================================
-    // TODO: Wait for item to be delivered
-    //==================================================
-	// Keep a condition variable that monitors whether or not item has been 
-	// delivered. Need to protect access to reading it.
+  /**
+   * Waits for item to be delivered. Keep a condition variable that monitors 
+   * whether or not item has been delivered. Need to protect access to reading it.
+   */
 	safe_printf("Customer %d waiting on order\n", id_);
 	std::unique_lock <decltype(customerMutex)> lock(customerMutex);
-	mealServed.wait(lock, [&](){return (servedDishCount > 0);});
+	  orderDelivered.wait(lock, [&](){return (deliveredOrderCount > 0);});
 	lock.unlock();
 	safe_printf("Customer %d received order\n", id_);
 	
-    // stay for some time
-    std::this_thread::sleep_for(std::chrono::seconds(5));
+  // stay for some time
+  std::this_thread::sleep_for(std::chrono::seconds(5));
 
-    safe_printf("Customer %d is happy as a tree \n", id_, cost);
+  safe_printf("Customer %d is happy as a tree \n", id_, cost);
 
-    return 0;
+  return 0;
   }
 };
 
-#endif //LAB6_CUSTOMER_H
+#endif //CUSTOMER_H
