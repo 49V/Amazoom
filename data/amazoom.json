@@ -3,40 +3,30 @@
     "item": "Antonio Sanchez Action Figure",
     "description": "Exactly what it sounds like",
     "price": 11,
-    "meal": "dinner",
-    "course": "appetizer",
     "item_id": 1
   },
   {
     "item": "Ukulele Capo",
     "description": "Holds the frets of a ukulele.",
     "price": 13,
-    "meal": "dinner",
-    "course": "appetizer",
     "item_id": 2
   },
   {
     "item": "Toothbrush",
     "description": "Yep.",
     "price": 13,
-    "meal": "dinner",
-    "course": "appetizer",
     "item_id": 3
   },
   {
     "item": "Bag of Chips",
     "description": "Crisp and Savoury.",
     "price": 13,
-    "meal": "dinner",
-    "course": "appetizer",
     "item_id": 4
   },
   {
     "item": "Cleats",
     "description": "Rugby cleats with metal studs. Excellent for trouncing scrubs",
     "price": 14,
-    "meal": "dinner",
-    "course": "appetizer",
     "item_id": 5
   }
 ]

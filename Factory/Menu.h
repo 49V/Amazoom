@@ -14,8 +14,6 @@ using JSON = nlohmann::json;
 struct MenuItem {
   std::string item;
   std::string description;
-  std::string meal;
-  std::string course;
   float price;
   int id;
 };
@@ -48,8 +46,6 @@ class Menu {
         MenuItem item;
         item.item = jitem["item"];
         item.description = jitem["description"];
-        item.meal = jitem["meal"];
-        item.course = jitem["course"];
         item.price = (float)jitem["price"];
         item.id = jitem["item_id"];
 
