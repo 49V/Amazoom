@@ -10,7 +10,7 @@
 #include "Order.h"
 #include "OrderQueue.h"
 #include "safe_printf.h"
-#include "common.h"
+#include "Common.h"
 
 /**
  * Inventory drivers take completed orders from the robots and deliver

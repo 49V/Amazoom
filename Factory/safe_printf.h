@@ -1,5 +1,5 @@
-#ifndef LAB6_SAFEPRINT_H
-#define LAB6_SAFEPRINT_H
+#ifndef SAFEPRINT_H
+#define SAFEPRINT_H
 
 #include <cstdio>
 #include <mutex>
@@ -21,4 +21,4 @@ inline void safe_printf(char const * const format, ...) {
   va_end(args);
 }
 
-#endif //LAB6_SAFEPRINT_H
+#endif //SAFEPRINT_H

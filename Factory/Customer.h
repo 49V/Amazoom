@@ -5,53 +5,19 @@
 #include <cpen333/thread/semaphore.h>
 #include <thread>
 #include <vector>
-
+#include "User.h"
 #include "safe_printf.h"
+
 
 /**
  * Customers place orders into a queue, wait for them to be
  * served, and then log off
  */
-class Customer : public cpen333::thread::thread_object {
-  OrderQueue& queue_;
-  Menu& catalogue_;
-  int id_;
-  int deliveredOrderCount = 0;
-  std::mutex customerMutex;
-  std::condition_variable orderDelivered;
+class Customer : public User {
 
- public:
-  /**
-   * Creates a customer
-   * @param id : Customer id
-   * @param catalogue : Catalogue for customer to order product from
-   * @param queue : Queue to place order into
-   */
-  Customer(int id, Menu& catalogue, OrderQueue& queue) :
-      id_(id), catalogue_(catalogue), queue_(queue) {}
+  public:
+  Customer(int id, Menu& catalogue, OrderQueue& queue) : User(id, catalogue, queue) {}
 
-  /**
-   * Unique customer id
-   * @return : Customer id
-   */
-  int id() {
-    return id_;
-  }
-
-  /**
-   * Delivers customer order and notifies the customer 
-   * @param order : Order that is ready to be delivered
-   */
-  void deliver(const Order& order) {
-
-	std::unique_lock<decltype(customerMutex)> lock(customerMutex);
-		deliveredOrderCount++;
-	lock.unlock();
-	
-	orderDelivered.notify_one();
-  
-  }
-  
   /**
    * Main customer function
    * @return 0 when complete
@@ -82,8 +48,8 @@ class Customer : public cpen333::thread::thread_object {
    * whether or not item has been delivered. Need to protect access to reading it.
    */
 	safe_printf("Customer %d waiting on order\n", id_);
-	std::unique_lock <decltype(customerMutex)> lock(customerMutex);
-	  orderDelivered.wait(lock, [&](){return (deliveredOrderCount > 0);});
+	std::unique_lock <decltype(userMutex)> lock(userMutex);
+	  userCV.wait(lock, [&](){return (servedCount > 0);});
 	lock.unlock();
 	safe_printf("Customer %d received order\n", id_);
 	

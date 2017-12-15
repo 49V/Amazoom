@@ -1,5 +1,7 @@
 #include "Menu.h"
 #include "Robot.h"
+#include "DeliveryRobot.h"
+#include "InventoryRobot.h"
 #include "DeliveryDriver.h"
 #include "InventoryDriver.h"
 #include "SingleOrderQueue.h"
@@ -39,12 +41,12 @@ int main() {
   
   //Delivery Robots
   for (int i=0; i<numberOfRobots; ++i) {
-    deliveryRobots.push_back(new Robot(i, delivery_order_queue, delivery_queue));
+    deliveryRobots.push_back(new DeliveryRobot(i, delivery_order_queue, delivery_queue));
   }
 
   //Inventory Robots (Offset by 2 to differentiate from delivery bots)
   for (int i=0; i<numberOfRobots; ++i) {
-    inventoryRobots.push_back(new Robot(i + 2, inventory_order_queue, stocked_queue));
+    inventoryRobots.push_back(new InventoryRobot(i + 2, inventory_order_queue, stocked_queue, managers));
   }
   
   // Delivery Drivers
@@ -64,7 +66,7 @@ int main() {
 
   //Manager
   for (int i=0; i<numberOfManagers; ++i) {
-    managers.push_back(new Manager(i, catalogue, inventory_queue, stocked_queue));
+    managers.push_back(new Manager(i, catalogue, inventory_queue));
   }
   
   // start everyone
@@ -122,9 +124,6 @@ int main() {
     robot->join();
   }
 
-  std::cout<< "The delivery queue is empty?: " << delivery_queue.isEmpty() << std::endl;
-  std::cout<< "The inventory queue is empty?: " << inventory_queue.isEmpty() << std::endl;
-  
     // Add numberOfDeliveryDrivers poison pills to the delivery_queue
   for(int i = 0; i < numberOfDeliveryDrivers; ++i){
 	  delivery_queue.add({POISON_ID, POISON_ID});
@@ -134,8 +133,6 @@ int main() {
 	  inventory_queue.add({POISON_ID, POISON_ID});
   }
   
-  std::cout<< "The delivery queue is empty?: " << delivery_queue.isEmpty() << std::endl;
-  std::cout<< "The inventory queue is empty?: " << inventory_queue.isEmpty() << std::endl;  
   // wait for all deliveryDrivers to leave
   for (auto& deliveryDriver : deliveryDrivers) {
     deliveryDriver->join();
