@@ -1,3 +1,6 @@
+#include <cpen333/process/shared_memory.h>
+
+#include "Common.h"
 #include "Menu.h"
 #include "Robot.h"
 #include "DeliveryRobot.h"
@@ -16,8 +19,12 @@
  * @return
  */
 int main() {
+
+  //Start shared memory
+  cpen333::process::shared_object<InventoryData> inventory(INVENTORY_MEMORY_NAME);
+
   Menu catalogue;
-  catalogue.load("../data/amazoom.json");
+  inventory->numberOfProducts = catalogue.load("../data/amazoom.json");
 
   // bunch of deliveryRobots, customers and deliveryDrivers
   std::vector<Robot*> deliveryRobots;
@@ -170,7 +177,11 @@ int main() {
   }
   
   std::cout << "Amazoom is closing" << std::endl;
+  for(int i = 0; i < MAX_NUMBER_OF_PRODUCTS; ++i) {
+    std::cout << "ITEM ID: " << inventory->stock[i][ITEM_ID_INDEX] << " STOCK: " << inventory->stock[i][ITEM_QUANTITY_INDEX] << std::endl;
+  }
+  
   cpen333::pause();
-
+  
   return 0;
 }

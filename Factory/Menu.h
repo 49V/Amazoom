@@ -6,6 +6,9 @@
 #include <fstream>
 #include <map>
 #include <json.hpp>
+
+#include "common.h"
+
 using JSON = nlohmann::json;
 
 /**
@@ -36,18 +39,26 @@ class Menu {
    */
   size_t load(const std::string& filename) {
     std::ifstream fin(filename);
-
     size_t numberAdded = 0;
+    size_t numberOfItems = 25; // I chose this arbitrarily so feel free to adjust
+    cpen333::process::shared_object<InventoryData> inventory(INVENTORY_MEMORY_NAME);
+
     if (fin.is_open()) {
       JSON jmenu;
       fin >> jmenu;
 
       for (const auto& jitem : jmenu) {
+
+        //Writes to the menu struct so users can later access it
         MenuItem item;
         item.item = jitem["item"];
         item.description = jitem["description"];
         item.price = (float)jitem["price"];
         item.id = jitem["item_id"];
+
+        //Writes to the inventory struct so robots can later access it
+        inventory->stock[numberAdded][ITEM_ID_INDEX] = jitem["item_id"];
+        inventory->stock[numberAdded][ITEM_QUANTITY_INDEX] = numberOfItems; 
 
         // add new item
         auto it = menu_.insert({item.id, item});
