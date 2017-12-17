@@ -40,9 +40,8 @@ class Robot : public cpen333::thread::thread_object {
       return id_;
     }
 
-
     /**
-     * Creates a new vector of order_queue for the robot until the carrying capacity is
+     * Creates a new vector of Orders for the robot until the carrying capacity is
      * reached or until the queue is empty.
      * @param order_queue The order_queue vector to be populated
      */
