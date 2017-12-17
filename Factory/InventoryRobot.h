@@ -16,49 +16,56 @@ class InventoryRobot : public Robot {
 
     InventoryRobot(int id, OrderQueue& orders, OrderQueue& serve, std::vector<Manager*>& managers ) :
         Robot(id, orders, serve), managers_(managers) {}
-
+    
     /**
      * Main execution function
      * @return 0 if completed
      */
     int main() {
 
+        std::vector<Order> orders;
+
         safe_printf("Inventory robot %d started\n", id_);
 
-        Order order = orders_.get();
-        
-        //==================================================
-        // TODO: ALLOW ROBOT TO PICK UP MULTIPLE OBJECTS
-        //================================================
+        getOrders(orders);
         
         while (true) {
             
-        // Check if we have the poison order
-        if(order == poisonOrder){
-            break;
-        }
+            for(int i = 0; i < orders.size(); ++i) {
+                // Check if we have the poison order
+
+                if(i == 0) {
+                    // process order
+                    safe_printf("Robot %d starting order {%d,%d}\n", id_, orders[i].customer_id, orders[i].item_id);
+                    std::this_thread::sleep_for(std::chrono::seconds(5));
+                    safe_printf("Robot %d completed order {%d,%d}\n", id_, orders[i].customer_id, orders[i].item_id);
+                }
+
+                if(orders[i] == poisonOrder){
+                    return 0;
+                }
+                
+                // Serve
+                serve_queue_.add(orders[i]);
+                    
+                    // Notify managers
+                    for (auto& manager : managers_) {
+                        if (manager->id() == orders[i].customer_id) {
+                            manager->deliver(orders[i]);
+                            break;
+                        }
+                    }
+            }    
         
-        // process order
-        safe_printf("Robot %d starting order {%d,%d}\n", id_, order.customer_id, order.item_id);
-        std::this_thread::sleep_for(std::chrono::seconds(5));
-        safe_printf("Robot %d completed order {%d,%d}\n", id_, order.customer_id, order.item_id);
+            // clear the orders vector so new orders can properly be added
+            orders.clear();
 
-        // add to those to serve
-        serve_.add(order);
-        // Tell manager that item has been stocked
-			for (auto& manager : managers_) {
-				if (manager->id() == order.customer_id) {
-					manager->deliver(order);
-					break;
-				}
-            }
-
-        // next order
-        order = orders_.get();
+           getOrders(orders);
         }
+
         safe_printf("Robot %d entering R&R Mode \n", id_);
 
-        return 0;
+        return 1;
     }
 
 };

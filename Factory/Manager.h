@@ -16,7 +16,6 @@ class Manager : public User {
 
   public:
   Manager(int id, Menu& catalogue, OrderQueue& queue) : User(id, catalogue, queue) {}
-
   /**
    * Main manager function
    * @return 0 when complete

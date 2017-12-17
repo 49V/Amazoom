@@ -30,7 +30,7 @@ int main() {
   const int numberOfRobots = 2;
   const int numberOfDeliveryDrivers = 2;
   const int numberOfInventoryDrivers = 2;
-  const int numberOfCustomers = 30;
+  const int numberOfCustomers = 5;
   const int numberOfManagers = 1;
 
   CircularOrderQueue delivery_order_queue;
@@ -96,6 +96,8 @@ int main() {
 
   std::cout << "Customers finished ordering for today" << std::endl;
   
+  std::cout << "Manager Served count: " << managers[0]->servedCount << std::endl;
+
   // Wait for all inventory to be stocked
   for (auto& manager : managers) {
     manager->join();

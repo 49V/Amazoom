@@ -12,11 +12,12 @@ protected:
     OrderQueue& queue_;
     Menu& catalogue_;
     int id_;
-    int servedCount = 0;
+    
     std::mutex userMutex;
     std::condition_variable userCV;
 
 public:
+    int servedCount = 0;
     /**
      * Creates a user
      * @param id : User id
